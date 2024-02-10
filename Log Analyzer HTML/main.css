@@ -1,0 +1,54 @@
+.success {
+    color: green;
+}
+
+.fail {
+    color: red;
+}
+
+pre {
+    padding-left: 8px;
+    margin: 0;
+}
+
+.success-logs { 
+    padding-left: 5px;
+    color: green;
+    border-left: 3px green solid;
+}
+
+.fail-logs {
+    padding-left: 5px;
+    color: red;
+    border-left: 3px red solid;
+}
+
+.flex {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.hover {
+    padding: 5px;
+}
+
+.hover:hover {
+    background-color: yellow;
+}
+
+.mark {
+    background-color: aqua;
+}
+
+.mark-start {
+    color: white;
+    background-color: coral;
+    position: sticky;
+    top: 0;
+}
+
+.timerange {
+    padding-left: 0px!important;
+    background-color: lawngreen;
+}
