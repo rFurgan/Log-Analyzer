@@ -1,0 +1,25 @@
+p.log {
+    margin: 0px;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+#container {
+    display: flex;
+    flex-direction: row;
+}
+
+.match {
+    background-color: coral;
+}
+
+.dont-show {
+    display: none;
+}
+
+.timerange {
+    background-color: aqua;
+}
+
+.temp-timerange {
+    background-color: greenyellow;
+}
