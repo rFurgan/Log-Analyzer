@@ -23,3 +23,11 @@ p.log {
 .temp-timerange {
     background-color: greenyellow;
 }
+
+.sideways {
+    background-color: orange;
+    writing-mode: vertical-lr;
+    transform: rotate(180deg);
+    margin-left: 0px;
+    margin-right: 0px;
+}

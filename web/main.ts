@@ -108,7 +108,25 @@ class Logviewer {
         searchElement.addEventListener('keyup', this._search.bind(this));
     }
 
-    private _finishTimerangeTags(collection: HTMLCollectionOf<HTMLParagraphElement>): void {
+    private _addTimerange() {
+        const top: HTMLDivElement = (document.getElementById('top') as HTMLDivElement);
+        const container: HTMLDivElement = (document.getElementById('container') as HTMLDivElement);
+        const topHeight: number = top.getBoundingClientRect().height;
+        const timerange: ITimerange = this._timeranges[this._timeranges.length - 1];
+        const fromRect: DOMRect = (document.getElementById(`line-${timerange.from}`) as HTMLParagraphElement).getBoundingClientRect();
+        const toRect: DOMRect = (document.getElementById(`line-${timerange.to}`) as HTMLParagraphElement).getBoundingClientRect();
+        const p: HTMLParagraphElement = document.createElement('p');
+        p.innerText = "100 - 200";
+        p.className = "sideways";
+        p.style.marginTop = `${fromRect.top - topHeight}px`;
+        p.style.height = `${toRect.top + toRect.height - topHeight}px`
+        container.insertBefore(p, container.firstChild);
+        // TODO
+    }
+
+    // Class with `from-to` and remove only those
+
+    private _closeTimerangeTags(collection: HTMLCollectionOf<HTMLParagraphElement>): void {
         const timerange: ITimerange = this._timeranges[this._timeranges.length - 1];
         if (timerange.from === undefined || timerange.to === undefined) {
             return;
@@ -121,7 +139,7 @@ class Logviewer {
         }
     }
 
-    private _finishTimerange(collection: HTMLCollectionOf<HTMLParagraphElement>, line: number): void {
+    private _closeTimerange(collection: HTMLCollectionOf<HTMLParagraphElement>, line: number): void {
         const timerange = this._timeranges[this._timeranges.length - 1];
         if (timerange.from !== undefined && timerange.from > line) {
             timerange.to = timerange.from;
@@ -130,10 +148,11 @@ class Logviewer {
             this._timeranges[this._timeranges.length - 1].to = line;
         }
         this._activeTimerange = false;
-        this._finishTimerangeTags(collection);
+        this._closeTimerangeTags(collection);
+        // this._addTimerange();
     }
 
-    private _startTimerange(collection: HTMLCollectionOf<HTMLParagraphElement>, line: number): void {
+    private _openTimerange(collection: HTMLCollectionOf<HTMLParagraphElement>, line: number): void {
         this._timeranges.push({from: line});
         (collection.item(line) as HTMLParagraphElement).className += this.TEMP_TIMERANGE;
         (collection.item(line + collection.length / 2) as HTMLParagraphElement).className += this.TEMP_TIMERANGE;
@@ -181,7 +200,7 @@ class Logviewer {
         this._timeranges.splice(index);
     }
 
-    private _onMouseup(event: MouseEvent): void {
+    private onTimerange(event: MouseEvent): void {
         const match: RegExpMatchArray | null = (event.target as HTMLParagraphElement).id.match(this.rLINE_LOG);
         if (match == null || match.length < 1) {
             return;
@@ -190,9 +209,9 @@ class Logviewer {
         const collection: HTMLCollectionOf<HTMLParagraphElement> = document.getElementsByClassName('log') as HTMLCollectionOf<HTMLParagraphElement>;
         if (event.button === 0) {
             if (!this._activeTimerange) {
-                this._startTimerange(collection, line);
+                this._openTimerange(collection, line);
             } else {
-                this._finishTimerange(collection, line);
+                this._closeTimerange(collection, line);
             }
         } else if (event.button === 2) {
             if (this._activeTimerange) {
@@ -228,7 +247,7 @@ class Logviewer {
 
     private _attachTimerange(): void {
         (document.getElementById('container') as HTMLDivElement).addEventListener('contextmenu', (event: MouseEvent) => event.preventDefault());
-        (document.getElementById('container') as HTMLDivElement).addEventListener('mouseup', this._onMouseup.bind(this));
+        (document.getElementById('container') as HTMLDivElement).addEventListener('mouseup', this.onTimerange.bind(this));
         (document.getElementById('container') as HTMLDivElement).addEventListener('mousemove', this._onMouseOver.bind(this));
     }
 }
