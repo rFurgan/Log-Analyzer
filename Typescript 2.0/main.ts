@@ -113,13 +113,15 @@ class Logviewer {
         if (timerange.from === undefined || timerange.to === undefined) {
             return;
         }
-        for(let line=timerange.from + 1; line <= timerange.to; line++) {
-            (collection.item(line) as HTMLParagraphElement).className += this.TIMERANGE;
-            (collection.item(line + collection.length / 2) as HTMLParagraphElement).className += this.TIMERANGE;
+        for(let line=timerange.from; line <= timerange.to; line++) {
+            const lineElement: HTMLParagraphElement = (collection.item(line) as HTMLParagraphElement);
+            const logElement: HTMLParagraphElement = (collection.item(line + collection.length / 2) as HTMLParagraphElement);
+            lineElement.className = lineElement.className.replace(this.rTEMP_TIMERANGE, this.TIMERANGE);
+            logElement.className = logElement.className.replace(this.rTEMP_TIMERANGE, this.TIMERANGE);
         }
     }
 
-    private _startTimerange(collection: HTMLCollectionOf<HTMLParagraphElement>, line: number): void {
+    private _finishTimerange(collection: HTMLCollectionOf<HTMLParagraphElement>, line: number): void {
         const timerange = this._timeranges[this._timeranges.length - 1];
         if (timerange.from !== undefined && timerange.from > line) {
             timerange.to = timerange.from;
@@ -131,10 +133,10 @@ class Logviewer {
         this._timerangeTags(collection);
     }
 
-    private _finishTimerange(collection: HTMLCollectionOf<HTMLParagraphElement>, line: number): void {
+    private _startTimerange(collection: HTMLCollectionOf<HTMLParagraphElement>, line: number): void {
         this._timeranges.push({from: line});
-        (collection.item(line) as HTMLParagraphElement).className = (collection.item(line) as HTMLParagraphElement).className.replace(this.rTEMP_TIMERANGE, this.TIMERANGE);
-        (collection.item(line + collection.length / 2) as HTMLParagraphElement).className = (collection.item(line + collection.length / 2) as HTMLParagraphElement).className.replace(this.rTEMP_TIMERANGE, this.TIMERANGE);
+        (collection.item(line) as HTMLParagraphElement).className += this.TEMP_TIMERANGE;
+        (collection.item(line + collection.length / 2) as HTMLParagraphElement).className += this.TEMP_TIMERANGE;
         this._activeTimerange = true;
     }
 
@@ -144,8 +146,8 @@ class Logviewer {
             return;
         }
         const lineElement: HTMLParagraphElement = collection.item(activeLine) as HTMLParagraphElement;
-        lineElement.className = lineElement.className.replace(this.rTIMERANGE, '');
         const logElement: HTMLParagraphElement = collection.item(activeLine + collection.length / 2) as HTMLParagraphElement;
+        lineElement.className = lineElement.className.replace(this.rTIMERANGE, '');
         logElement.className = logElement.className.replace(this.rTIMERANGE, '');
         this._timeranges.pop();
         this._activeTimerange = false;
@@ -172,8 +174,10 @@ class Logviewer {
             return;
         }
         for(let line=timerange.from; line <= timerange.to; line++) {
-            (collection.item(line) as HTMLParagraphElement).className = (collection.item(line) as HTMLParagraphElement).className.replace(this.rTIMERANGE, '');
-            (collection.item(line + collection.length / 2) as HTMLParagraphElement).className = (collection.item(line + collection.length / 2) as HTMLParagraphElement).className.replace(this.rTIMERANGE, '');
+            const lineElement: HTMLParagraphElement = (collection.item(line) as HTMLParagraphElement);
+            const logElement: HTMLParagraphElement = (collection.item(line + collection.length / 2) as HTMLParagraphElement);
+            lineElement.className = lineElement.className.replace(this.rTIMERANGE, '');
+            logElement.className = logElement.className.replace(this.rTIMERANGE, '');
         }
         this._timeranges.splice(index);
     }
@@ -186,7 +190,7 @@ class Logviewer {
         const line: number = parseInt(match[match.length - 1]);
         const collection: HTMLCollectionOf<HTMLParagraphElement> = document.getElementsByClassName('log') as HTMLCollectionOf<HTMLParagraphElement>;
         if (event.button === 0) {
-            if (this._activeTimerange) {
+            if (!this._activeTimerange) {
                 this._startTimerange(collection, line);
             } else {
                 this._finishTimerange(collection, line);
