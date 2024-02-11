@@ -108,7 +108,7 @@ class Logviewer {
         searchElement.addEventListener('keyup', this._search.bind(this));
     }
 
-    private _timerangeTags(collection: HTMLCollectionOf<HTMLParagraphElement>): void {
+    private _finishTimerangeTags(collection: HTMLCollectionOf<HTMLParagraphElement>): void {
         const timerange: ITimerange = this._timeranges[this._timeranges.length - 1];
         if (timerange.from === undefined || timerange.to === undefined) {
             return;
@@ -130,7 +130,7 @@ class Logviewer {
             this._timeranges[this._timeranges.length - 1].to = line;
         }
         this._activeTimerange = false;
-        this._timerangeTags(collection);
+        this._finishTimerangeTags(collection);
     }
 
     private _startTimerange(collection: HTMLCollectionOf<HTMLParagraphElement>, line: number): void {
@@ -161,7 +161,6 @@ class Logviewer {
             }
         });
         return timerangeIndex;
-
     }
 
     private _removeTimerange(collection: HTMLCollectionOf<HTMLParagraphElement>, line: number): void {
@@ -182,7 +181,7 @@ class Logviewer {
         this._timeranges.splice(index);
     }
 
-    private _timerange(event: MouseEvent): void {
+    private _onMouseup(event: MouseEvent): void {
         const match: RegExpMatchArray | null = (event.target as HTMLParagraphElement).id.match(this.rLINE_LOG);
         if (match == null || match.length < 1) {
             return;
@@ -229,7 +228,7 @@ class Logviewer {
 
     private _attachTimerange(): void {
         (document.getElementById('container') as HTMLDivElement).addEventListener('contextmenu', (event: MouseEvent) => event.preventDefault());
-        (document.getElementById('container') as HTMLDivElement).addEventListener('mouseup', this._timerange.bind(this));
+        (document.getElementById('container') as HTMLDivElement).addEventListener('mouseup', this._onMouseup.bind(this));
         (document.getElementById('container') as HTMLDivElement).addEventListener('mousemove', this._onMouseOver.bind(this));
     }
 }
