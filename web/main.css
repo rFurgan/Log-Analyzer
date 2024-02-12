@@ -1,33 +1,33 @@
 p.log {
-    margin: 0px;
-    font-family: 'Courier New', Courier, monospace;
+  margin: 0px;
+  font-family: "Courier New", Courier, monospace;
 }
 
 #container {
-    display: flex;
-    flex-direction: row;
+  display: flex;
+  flex-direction: row;
 }
 
 .match {
-    background-color: coral;
+  background-color: coral;
 }
 
 .dont-show {
-    display: none;
+  display: none;
 }
 
 .timerange {
-    background-color: aqua;
+  background-color: aqua;
 }
 
 .temp-timerange {
-    background-color: greenyellow;
+  background-color: greenyellow;
 }
 
 .sideways {
-    background-color: orange;
-    writing-mode: vertical-lr;
-    transform: rotate(180deg);
-    margin-left: 0px;
-    margin-right: 0px;
+  background-color: #ffa500;
+  writing-mode: vertical-lr;
+  transform: rotate(180deg);
+  margin-left: 0px;
+  margin-right: 0px;
 }
