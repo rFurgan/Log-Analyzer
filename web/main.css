@@ -31,3 +31,12 @@ p.log {
   margin-left: 0px;
   margin-right: 0px;
 }
+
+.timerange-overview {
+  display: flex;
+  flex-direction: row;
+  border: 2px black solid;
+  p {
+    margin: 0px 10px 0px 10px;
+  }
+}

@@ -94,6 +94,10 @@ class Logviewer {
     this._attachMatchesOnly();
     this._attachTimerange();
     this._attachSearchColor();
+
+    this._addTimerangeOverview(); // [TODO]
+    this._addTimerangeOverview(); // [TODO]
+    this._addTimerangeOverview(); // [TODO]
   }
 
   private _addLogs(): void {
@@ -247,6 +251,11 @@ class Logviewer {
 
   private _addTimerangeOverview() {
     const timerangeOverview: HTMLDivElement = document.createElement("div");
+    // Attach click onto div element to scroll into view of timerange from
+    // Attach click to remove button (not div) and remove child (remove button) from timerange
+
+    // Redo stuff done in the bus
+
     // Lines
     // Timerange
     // Color
