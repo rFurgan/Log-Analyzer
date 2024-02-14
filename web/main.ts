@@ -66,8 +66,8 @@ const loglines = [
 ];
 
 interface ITimerange {
-  from?: number;
-  to?: number;
+  from: number;
+  to: number;
 }
 
 class Logviewer {
@@ -91,52 +91,35 @@ class Logviewer {
     this._logs = logs;
     this._addLogs();
     this._attachSearch();
-    this._attachMatchesOnly();
-    this._attachTimerange();
+    // this._attachMatchesOnly();
+    // this._attachTimerange();
     this._attachSearchColor();
-
-    this._addTimerangeOverview(); // [TODO]
-    this._addTimerangeOverview(); // [TODO]
-    this._addTimerangeOverview(); // [TODO]
   }
 
   private _addLogs(): void {
-    const logs: HTMLElement = document.getElementById("logs") as HTMLDivElement;
-    const lines: HTMLElement = document.getElementById(
-      "lines"
-    ) as HTMLDivElement;
-
+    const zenbu = document.getElementById("zenbu") as HTMLDivElement;
     this._logs.forEach((line: string, lineNumber: number) => {
-      const logElement: HTMLParagraphElement = document.createElement("p");
-      const lineElement: HTMLParagraphElement = document.createElement("p");
-
-      logElement.id = `line-${lineNumber.toString()}`;
-      lineElement.id = `log-${lineNumber.toString()}`;
-
-      logElement.className += "log";
-      lineElement.className += "log";
-
-      logElement.innerText = line;
-      lineElement.innerText = lineNumber.toString();
-
-      logs.appendChild(logElement);
-      lines.appendChild(lineElement);
+      const lineElement = document.createElement("div");
+      const lineNumberElement = document.createElement("p");
+      const lineLogElement = document.createElement("p");
+      lineElement.className = "flexible";
+      lineElement.id = `zenbu-${lineNumber}`;
+      lineLogElement.innerText = line;
+      lineNumberElement.innerText = `${lineNumber}`;
+      lineElement.append(lineNumberElement, lineLogElement);
+      zenbu.append(lineElement);
     });
   }
 
   private _markMatches(revert: boolean): void {
     this._matchLines.forEach((lineNumber: number) => {
-      const logElement: HTMLParagraphElement = document.getElementById(
-        `log-${lineNumber.toString()}`
-      ) as HTMLParagraphElement;
       const lineElement: HTMLParagraphElement = document.getElementById(
-        `line-${lineNumber.toString()}`
+        `zenbu-${lineNumber}`
       ) as HTMLParagraphElement;
+
       if (revert) {
-        logElement.className = logElement.className.replace(this.rMATCH, "");
         lineElement.className = lineElement.className.replace(this.rMATCH, "");
       } else {
-        logElement.className += this.MATCH;
         lineElement.className += this.MATCH;
       }
     });
@@ -187,8 +170,8 @@ class Logviewer {
       searchRequest === ""
         ? []
         : (loglines as any).flatMap((line: string, lineNumber: number) => {
-          return line.indexOf(searchRequest) > -1 ? lineNumber : [];
-        });
+            return line.indexOf(searchRequest) > -1 ? lineNumber : [];
+          });
     this._matchesOnly();
     this._markMatches(false);
   }
@@ -222,8 +205,6 @@ class Logviewer {
     // TODO
   }
 
-  // Class with `from-to` and remove only those
-
   private _closeTimerangeTags(
     collection: HTMLCollectionOf<HTMLParagraphElement>
   ): void {
@@ -249,22 +230,58 @@ class Logviewer {
     }
   }
 
+  private _getLinesElement(timerange: ITimerange): HTMLParagraphElement {
+    const linesElement: HTMLParagraphElement = document.createElement("p");
+    linesElement.innerText = `${timerange.from} - ${timerange.to}`;
+    return linesElement;
+  }
+
+  private _getDurationElement(timerange: ITimerange): HTMLParagraphElement {
+    const timeDiff = timerange.to - timerange.from;
+    const durationElement: HTMLParagraphElement = document.createElement("p");
+    durationElement.innerText = `${timeDiff}s`;
+    return durationElement;
+  }
+
+  private _getColorElement(): HTMLInputElement {
+    const colorElement: HTMLInputElement = document.createElement("input");
+    colorElement.type = "color";
+    // TODO
+    // colorElement.value = _getRandomColor();
+    // colorElement.addEventListener(('change' => {
+    //     // Change color of timerange indicator
+    // }))
+    return colorElement;
+  }
+
+  private _getRemoveElement(
+    timerangeElement: HTMLDivElement
+  ): HTMLButtonElement {
+    const removeElement: HTMLButtonElement = document.createElement("button");
+    removeElement.addEventListener("click", () => {
+      timerangeElement.remove();
+    });
+    return removeElement;
+  }
+
+  private _getTimerangeElement(timerange: ITimerange): HTMLDivElement {
+    const timerangeElement: HTMLDivElement = document.createElement("div");
+    const removeElement: HTMLParagraphElement = document.createElement("p");
+    timerangeElement.append(
+      this._getLinesElement(timerange),
+      this._getDurationElement(timerange),
+      this._getColorElement(),
+      this._getRemoveElement(timerangeElement)
+    );
+    return timerangeElement;
+  }
+
   private _addTimerangeOverview() {
-    const timerangeOverview: HTMLDivElement = document.createElement("div");
-    // Attach click onto div element to scroll into view of timerange from
-    // Attach click to remove button (not div) and remove child (remove button) from timerange
-
-    // Redo stuff done in the bus
-
-    // Lines
-    // Timerange
-    // Color
-    // Add 'X' to remove
-    // [ 100-200  2.241s  <color>      X ]
     const timeranges: HTMLDivElement = document.getElementById(
       "timeranges"
     ) as HTMLDivElement;
-    // timeranges.appendChild();
+    // TODO _getTImerangeElement
+    timeranges.append();
   }
 
   private _closeTimerange(
@@ -286,7 +303,7 @@ class Logviewer {
     collection: HTMLCollectionOf<HTMLParagraphElement>,
     line: number
   ): void {
-    this._timeranges.push({ from: line });
+    this._timeranges.push({ from: line, to: -1 });
     (collection.item(line) as HTMLParagraphElement).className +=
       this.TEMP_TIMERANGE;
     (

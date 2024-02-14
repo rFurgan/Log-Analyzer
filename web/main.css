@@ -3,6 +3,19 @@ p.log {
   font-family: "Courier New", Courier, monospace;
 }
 
+.flexible {
+  display: flex;
+  flex-direction: row;
+}
+
+.redder {
+  background-color: lightpink;
+}
+
+.bluer {
+  background-color: lightblue;
+}
+
 #container {
   display: flex;
   flex-direction: row;
