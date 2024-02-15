@@ -1,24 +1,15 @@
-p.log {
-  margin: 0px;
-  font-family: "Courier New", Courier, monospace;
-}
-
-.flexible {
+.line {
   display: flex;
   flex-direction: row;
-}
 
-.redder {
-  background-color: lightpink;
-}
+  :first-child {
+    margin-right: 10px !important;
+  }
 
-.bluer {
-  background-color: lightblue;
-}
-
-#container {
-  display: flex;
-  flex-direction: row;
+  p {
+    margin: 0px;
+    font-family: "Courier New", Courier, monospace;
+  }
 }
 
 .match {
@@ -49,6 +40,7 @@ p.log {
   display: flex;
   flex-direction: row;
   border: 2px black solid;
+
   p {
     margin: 0px 10px 0px 10px;
   }

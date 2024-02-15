@@ -71,163 +71,91 @@ interface ITimerange {
 }
 
 class Logviewer {
-  private _logs: string[];
-  private _matchLines: number[] = [];
+  private _loglines: string[];
+  private _matches: number[] = [];
   private _activeTimerange: boolean = false;
   private _timeranges: ITimerange[] = [];
 
-  readonly rMATCH: RegExp = /\smatch\s/;
-  readonly rDONT_SHOW: RegExp = /\s(dont-show)\s/;
-  readonly rLINE_LOG: RegExp = /(line|log)\-(\d+)/;
-  readonly rTIMERANGE: RegExp = /\s(timerange)\s/;
-  readonly rTEMP_TIMERANGE: RegExp = /(\stemp\-timerange\s)+/;
+  private readonly _logsElement: HTMLDivElement = document.getElementById(
+    "logs"
+  ) as HTMLDivElement;
+  private readonly _searchElement: HTMLInputElement = document.getElementById(
+    "search"
+  ) as HTMLInputElement;
+  private readonly _topElement: HTMLDivElement = document.getElementById(
+    "top"
+  ) as HTMLDivElement;
+  private readonly _searchColorElement: HTMLInputElement =
+    document.getElementById("search-color") as HTMLInputElement;
+  private readonly _lineElements: HTMLCollectionOf<HTMLDivElement> =
+    document.getElementsByClassName("line") as HTMLCollectionOf<HTMLDivElement>;
 
-  readonly MATCH: string = " match ";
-  readonly TIMERANGE: string = " timerange ";
-  readonly DONT_SHOW: string = " dont-show ";
-  readonly TEMP_TIMERANGE: string = " temp-timerange ";
-
-  constructor(logs: string[]) {
-    this._logs = logs;
+  constructor(loglines: string[]) {
+    this._loglines = loglines;
     this._addLogs();
     this._attachSearch();
-    // this._attachMatchesOnly();
-    // this._attachTimerange();
+    this._attachTimerange();
     this._attachSearchColor();
   }
 
   private _addLogs(): void {
-    const zenbu = document.getElementById("zenbu") as HTMLDivElement;
-    this._logs.forEach((line: string, lineNumber: number) => {
+    this._loglines.forEach((line: string, lineNumber: number) => {
       const lineElement = document.createElement("div");
       const lineNumberElement = document.createElement("p");
       const lineLogElement = document.createElement("p");
-      lineElement.className = "flexible";
-      lineElement.id = `zenbu-${lineNumber}`;
+      lineElement.className = "line";
+      lineElement.id = `${lineNumber}`;
       lineLogElement.innerText = line;
       lineNumberElement.innerText = `${lineNumber}`;
       lineElement.append(lineNumberElement, lineLogElement);
-      zenbu.append(lineElement);
+      this._logsElement.append(lineElement);
     });
   }
 
-  private _markMatches(revert: boolean): void {
-    this._matchLines.forEach((lineNumber: number) => {
-      const lineElement: HTMLParagraphElement = document.getElementById(
-        `zenbu-${lineNumber}`
-      ) as HTMLParagraphElement;
-
-      if (revert) {
-        lineElement.className = lineElement.className.replace(this.rMATCH, "");
-      } else {
-        lineElement.className += this.MATCH;
-      }
+  private _markMatches(): void {
+    this._matches.forEach((match: number) => {
+      (this._lineElements.item(match) as HTMLParagraphElement).className +=
+        " match ";
     });
   }
 
-  private _matchesOnly(): void {
-    const showOnlyMatchesElement: HTMLInputElement = document.getElementById(
-      "search-matches"
-    ) as HTMLInputElement;
-    for (let element of document.getElementsByClassName(
-      "log"
-    ) as HTMLCollectionOf<HTMLParagraphElement> as any) {
-      const match: RegExpMatchArray | null = element.id.match(this.rLINE_LOG);
-      if (match == null || match.length < 1) {
-        return;
-      }
-      const id: number = parseInt(match[match.length - 1]);
-      if (this._matchLines.indexOf(id) === -1) {
-        if (!showOnlyMatchesElement.checked) {
-          element.className = element.className.replace(this.rDONT_SHOW, "");
-        } else if (
-          showOnlyMatchesElement.checked &&
-          element.className.indexOf(this.DONT_SHOW) === -1
-        ) {
-          element.className += this.DONT_SHOW;
-        }
-      } else {
-        element.className = element.className.replace(this.rDONT_SHOW, "");
-      }
+  private _unmarkMatches(): void {
+    for (let lineElement of this._lineElements as any) {
+      lineElement.className = lineElement.className.replace(/\smatch\s/, "");
     }
   }
 
-  private _attachMatchesOnly(): void {
-    const showOnlyMatchesElement: HTMLInputElement = document.getElementById(
-      "search-matches"
-    ) as HTMLInputElement;
-    showOnlyMatchesElement.addEventListener(
-      "change",
-      this._matchesOnly.bind(this)
-    );
-  }
-
   private _search(): void {
-    const searchElement = document.getElementById("search") as HTMLInputElement;
-    this._markMatches(true);
-    const searchRequest: string = searchElement.value.trim();
-    this._matchLines =
+    this._unmarkMatches();
+    const searchRequest: string = this._searchElement.value.trim();
+    this._matches =
       searchRequest === ""
         ? []
         : (loglines as any).flatMap((line: string, lineNumber: number) => {
             return line.indexOf(searchRequest) > -1 ? lineNumber : [];
           });
-    this._matchesOnly();
-    this._markMatches(false);
+    this._markMatches();
   }
 
   private _attachSearch(): void {
-    const searchElement = document.getElementById("search") as HTMLInputElement;
-    searchElement.addEventListener("keyup", this._search.bind(this));
+    this._searchElement.addEventListener("keyup", this._search.bind(this));
   }
 
-  private _addTimerange() {
-    const top: HTMLDivElement = document.getElementById(
-      "top"
-    ) as HTMLDivElement;
-    const container: HTMLDivElement = document.getElementById(
-      "container"
-    ) as HTMLDivElement;
-    const topHeight: number = top.getBoundingClientRect().height;
-    const timerange: ITimerange = this._timeranges[this._timeranges.length - 1];
-    const fromRect: DOMRect = (
-      document.getElementById(`line-${timerange.from}`) as HTMLParagraphElement
-    ).getBoundingClientRect();
-    const toRect: DOMRect = (
-      document.getElementById(`line-${timerange.to}`) as HTMLParagraphElement
-    ).getBoundingClientRect();
-    const p: HTMLParagraphElement = document.createElement("p");
-    p.innerText = "100 - 200";
-    p.className = "sideways";
-    p.style.marginTop = `${fromRect.top - topHeight}px`;
-    p.style.height = `${toRect.top + toRect.height - topHeight}px`;
-    container.insertBefore(p, container.firstChild);
-    // TODO
-  }
-
-  private _closeTimerangeTags(
-    collection: HTMLCollectionOf<HTMLParagraphElement>
-  ): void {
-    const timerange: ITimerange = this._timeranges[this._timeranges.length - 1];
-    if (timerange.from === undefined || timerange.to === undefined) {
-      return;
-    }
-    for (let line = timerange.from; line <= timerange.to; line++) {
-      const lineElement: HTMLParagraphElement = collection.item(
-        line
-      ) as HTMLParagraphElement;
-      const logElement: HTMLParagraphElement = collection.item(
-        line + collection.length / 2
-      ) as HTMLParagraphElement;
-      lineElement.className = lineElement.className.replace(
-        this.rTEMP_TIMERANGE,
-        this.TIMERANGE
-      );
-      logElement.className = logElement.className.replace(
-        this.rTEMP_TIMERANGE,
-        this.TIMERANGE
-      );
-    }
+  private _attachSearchColor() {
+    this._searchColorElement.addEventListener("change", (event) => {
+      for (let styleSheet of document.styleSheets as any) {
+        if (styleSheet.cssRules) {
+          for (let cssrule of styleSheet.cssRules) {
+            console.log((cssrule as CSSStyleRule).selectorText);
+            if ((cssrule as CSSStyleRule).selectorText === ".match") {
+              (cssrule as CSSStyleRule).style.backgroundColor = (
+                event.target as HTMLInputElement
+              ).value;
+            }
+          }
+        }
+      }
+    });
   }
 
   private _getLinesElement(timerange: ITimerange): HTMLParagraphElement {
@@ -276,7 +204,7 @@ class Logviewer {
     return timerangeElement;
   }
 
-  private _addTimerangeOverview() {
+  private _addTimerangeOverview(): void {
     const timeranges: HTMLDivElement = document.getElementById(
       "timeranges"
     ) as HTMLDivElement;
@@ -284,10 +212,23 @@ class Logviewer {
     timeranges.append();
   }
 
-  private _closeTimerange(
-    collection: HTMLCollectionOf<HTMLParagraphElement>,
-    line: number
-  ): void {
+  private _closeTimerangeTags(): void {
+    const timerange: ITimerange = this._timeranges[this._timeranges.length - 1];
+    if (timerange.from === undefined || timerange.to === undefined) {
+      return;
+    }
+    for (let line = timerange.from; line <= timerange.to; line++) {
+      const lineElement: HTMLParagraphElement = this._lineElements.item(
+        line
+      ) as HTMLParagraphElement;
+      lineElement.className = lineElement.className.replace(
+        /(\stemp\-timerange\s)+/,
+        " timerange "
+      );
+    }
+  }
+
+  private _closeTimerange(line: number): void {
     const timerange = this._timeranges[this._timeranges.length - 1];
     if (timerange.from !== undefined && timerange.from > line) {
       timerange.to = timerange.from;
@@ -296,38 +237,30 @@ class Logviewer {
       this._timeranges[this._timeranges.length - 1].to = line;
     }
     this._activeTimerange = false;
-    this._closeTimerangeTags(collection);
+    this._closeTimerangeTags();
   }
 
-  private _openTimerange(
-    collection: HTMLCollectionOf<HTMLParagraphElement>,
-    line: number
-  ): void {
+  private _openTimerange(line: number): void {
     this._timeranges.push({ from: line, to: -1 });
-    (collection.item(line) as HTMLParagraphElement).className +=
-      this.TEMP_TIMERANGE;
-    (
-      collection.item(line + collection.length / 2) as HTMLParagraphElement
-    ).className += this.TEMP_TIMERANGE;
+    (this._lineElements.item(line) as HTMLDivElement).className +=
+      " temp-timerange ";
     this._activeTimerange = true;
   }
 
-  private _cancelTimerange(
-    collection: HTMLCollectionOf<HTMLParagraphElement>
-  ): void {
+  // TODO  Janky
+  private _cancelTimerange(): void {
     const activeLine: number | undefined =
       this._timeranges[this._timeranges.length - 1].from;
     if (activeLine === undefined) {
       return;
     }
-    const lineElement: HTMLParagraphElement = collection.item(
+    const lineElement: HTMLParagraphElement = this._lineElements.item(
       activeLine
     ) as HTMLParagraphElement;
-    const logElement: HTMLParagraphElement = collection.item(
-      activeLine + collection.length / 2
-    ) as HTMLParagraphElement;
-    lineElement.className = lineElement.className.replace(this.rTIMERANGE, "");
-    logElement.className = logElement.className.replace(this.rTIMERANGE, "");
+    lineElement.className = lineElement.className.replace(
+      /\s(timerange)\s/,
+      ""
+    );
     this._timeranges.pop();
     this._activeTimerange = false;
   }
@@ -346,10 +279,8 @@ class Logviewer {
     return timerangeIndex;
   }
 
-  private _removeTimerange(
-    collection: HTMLCollectionOf<HTMLParagraphElement>,
-    line: number
-  ): void {
+  // TODO  Janky
+  private _removeTimerange(line: number): void {
     const index: number = this._getClosestTimerangeIndex(line);
     if (index === -1) {
       return;
@@ -359,44 +290,30 @@ class Logviewer {
       return;
     }
     for (let line = timerange.from; line <= timerange.to; line++) {
-      const lineElement: HTMLParagraphElement = collection.item(
+      const lineElement: HTMLParagraphElement = this._lineElements.item(
         line
       ) as HTMLParagraphElement;
-      const logElement: HTMLParagraphElement = collection.item(
-        line + collection.length / 2
-      ) as HTMLParagraphElement;
       lineElement.className = lineElement.className.replace(
-        this.rTIMERANGE,
+        /\s(timerange)\s/,
         ""
       );
-      logElement.className = logElement.className.replace(this.rTIMERANGE, "");
     }
     this._timeranges.splice(index);
   }
 
-  private onTimerange(event: MouseEvent): void {
-    const match: RegExpMatchArray | null = (
-      event.target as HTMLParagraphElement
-    ).id.match(this.rLINE_LOG);
-    if (match == null || match.length < 1) {
-      return;
-    }
-    const line: number = parseInt(match[match.length - 1]);
-    const collection: HTMLCollectionOf<HTMLParagraphElement> =
-      document.getElementsByClassName(
-        "log"
-      ) as HTMLCollectionOf<HTMLParagraphElement>;
+  private onMouseUp(event: MouseEvent): void {
+    const line: number = parseInt((event.target as any).parentNode.id);
     if (event.button === 0) {
       if (!this._activeTimerange) {
-        this._openTimerange(collection, line);
+        this._openTimerange(line);
       } else {
-        this._closeTimerange(collection, line);
+        this._closeTimerange(line);
       }
     } else if (event.button === 2) {
       if (this._activeTimerange) {
-        this._cancelTimerange(collection);
+        this._cancelTimerange();
       } else {
-        this._removeTimerange(collection, line);
+        this._removeTimerange(line);
       }
     }
   }
@@ -405,20 +322,17 @@ class Logviewer {
     if (!this._activeTimerange) {
       return;
     }
-    const match: RegExpMatchArray | null = (
-      event.target as HTMLParagraphElement
-    ).id.match(this.rLINE_LOG);
-    if (match == null || match.length < 1) {
+    const line: number = parseInt((event.target as any).parentNode.id);
+    if ((Number as any).isNaN(line)) {
+      console.log("Error");
       return;
     }
-    const collection: HTMLCollectionOf<HTMLParagraphElement> =
-      document.getElementsByClassName(
-        "log"
-      ) as HTMLCollectionOf<HTMLParagraphElement>;
-    for (let element of collection as any) {
-      element.className = element.className.replace(this.rTEMP_TIMERANGE, "");
+    for (let lineElement of this._lineElements as any) {
+      lineElement.className = lineElement.className.replace(
+        /(\stemp\-timerange\s)+/,
+        ""
+      );
     }
-    const line: number = parseInt(match[match.length - 1]);
     const timerange: ITimerange = this._timeranges[this._timeranges.length - 1];
     if (timerange.from === undefined) {
       return;
@@ -428,46 +342,21 @@ class Logviewer {
       index <= (timerange.from <= line ? line : timerange.from);
       index++
     ) {
-      (collection.item(index) as HTMLParagraphElement).className +=
-        this.TEMP_TIMERANGE;
-      (
-        collection.item(index + collection.length / 2) as HTMLParagraphElement
-      ).className += this.TEMP_TIMERANGE;
+      (this._lineElements.item(index) as HTMLParagraphElement).className +=
+        " temp-timerange ";
     }
   }
 
+  // TODO - Mousemove on whole body
   private _attachTimerange(): void {
-    (document.getElementById("container") as HTMLDivElement).addEventListener(
-      "contextmenu",
-      (event: MouseEvent) => event.preventDefault()
+    this._logsElement.addEventListener("contextmenu", (event: MouseEvent) =>
+      event.preventDefault()
     );
-    (document.getElementById("container") as HTMLDivElement).addEventListener(
-      "mouseup",
-      this.onTimerange.bind(this)
-    );
-    (document.getElementById("container") as HTMLDivElement).addEventListener(
+    this._logsElement.addEventListener("mouseup", this.onMouseUp.bind(this));
+    this._logsElement.addEventListener(
       "mousemove",
       this._onMouseOver.bind(this)
     );
-  }
-
-  private _attachSearchColor() {
-    (
-      document.getElementById("search-color") as HTMLInputElement
-    ).addEventListener("change", (event) => {
-      for (let styleSheet of document.styleSheets as any) {
-        if (styleSheet.cssRules) {
-          for (let cssrule of styleSheet.cssRules) {
-            console.log((cssrule as CSSStyleRule).selectorText);
-            if ((cssrule as CSSStyleRule).selectorText === ".match") {
-              (cssrule as CSSStyleRule).style.backgroundColor = (
-                event.target as HTMLInputElement
-              ).value;
-            }
-          }
-        }
-      }
-    });
   }
 }
 
