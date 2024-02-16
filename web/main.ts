@@ -353,10 +353,7 @@ class Logviewer {
       event.preventDefault()
     );
     this._logsElement.addEventListener("mouseup", this.onMouseUp.bind(this));
-    this._logsElement.addEventListener(
-      "mousemove",
-      this._onMouseOver.bind(this)
-    );
+    document.body.addEventListener("mousemove", this._onMouseOver.bind(this));
   }
 }
 
