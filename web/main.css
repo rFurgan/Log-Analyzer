@@ -12,6 +12,10 @@
   }
 }
 
+p.log {
+  width: 100%;
+}
+
 .match {
   background-color: coral;
 }

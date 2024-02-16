@@ -106,6 +106,7 @@ class Logviewer {
       lineElement.className = "line";
       lineElement.id = `${lineNumber}`;
       lineLogElement.innerText = line;
+      lineLogElement.className = "log";
       lineNumberElement.innerText = `${lineNumber}`;
       lineElement.append(lineNumberElement, lineLogElement);
       this._logsElement.append(lineElement);
@@ -120,7 +121,9 @@ class Logviewer {
   }
 
   private _unmarkMatches(): void {
-    for (let lineElement of this._lineElements as any) {
+    for (let lineElement of [
+      ...(document.getElementsByClassName("match") as any),
+    ]) {
       lineElement.className = lineElement.className.replace(/\smatch\s/, "");
     }
   }
@@ -146,7 +149,6 @@ class Logviewer {
       for (let styleSheet of document.styleSheets as any) {
         if (styleSheet.cssRules) {
           for (let cssrule of styleSheet.cssRules) {
-            console.log((cssrule as CSSStyleRule).selectorText);
             if ((cssrule as CSSStyleRule).selectorText === ".match") {
               (cssrule as CSSStyleRule).style.backgroundColor = (
                 event.target as HTMLInputElement
@@ -247,20 +249,20 @@ class Logviewer {
     this._activeTimerange = true;
   }
 
-  // TODO  Janky
   private _cancelTimerange(): void {
     const activeLine: number | undefined =
       this._timeranges[this._timeranges.length - 1].from;
     if (activeLine === undefined) {
       return;
     }
-    const lineElement: HTMLParagraphElement = this._lineElements.item(
-      activeLine
-    ) as HTMLParagraphElement;
-    lineElement.className = lineElement.className.replace(
-      /\s(timerange)\s/,
-      ""
-    );
+    for (let lineElement of [
+      ...(document.getElementsByClassName("temp-timerange") as any),
+    ]) {
+      lineElement.className = lineElement.className.replace(
+        /\s(temp-timerange)\s/,
+        ""
+      );
+    }
     this._timeranges.pop();
     this._activeTimerange = false;
   }
@@ -279,7 +281,6 @@ class Logviewer {
     return timerangeIndex;
   }
 
-  // TODO  Janky
   private _removeTimerange(line: number): void {
     const index: number = this._getClosestTimerangeIndex(line);
     if (index === -1) {
@@ -324,10 +325,11 @@ class Logviewer {
     }
     const line: number = parseInt((event.target as any).parentNode.id);
     if ((Number as any).isNaN(line)) {
-      console.log("Error");
       return;
     }
-    for (let lineElement of this._lineElements as any) {
+    for (let lineElement of [
+      ...(document.getElementsByClassName("temp-timerange") as any),
+    ]) {
       lineElement.className = lineElement.className.replace(
         /(\stemp\-timerange\s)+/,
         ""
@@ -347,7 +349,6 @@ class Logviewer {
     }
   }
 
-  // TODO - Mousemove on whole body
   private _attachTimerange(): void {
     this._logsElement.addEventListener("contextmenu", (event: MouseEvent) =>
       event.preventDefault()
