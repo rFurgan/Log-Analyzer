@@ -177,10 +177,13 @@ class Logviewer {
     const colorElement: HTMLInputElement = document.createElement("input");
     colorElement.type = "color";
     // TODO
-    // colorElement.value = _getRandomColor();
-    // colorElement.addEventListener(('change' => {
-    //     // Change color of timerange indicator
-    // }))
+    colorElement.value = _getRandomColor();
+    colorElement.addEventListener(
+      ("change",
+      (event) => {
+        //
+      });
+    );
     return colorElement;
   }
 
@@ -302,7 +305,7 @@ class Logviewer {
     this._timeranges.splice(index);
   }
 
-  private onMouseUp(event: MouseEvent): void {
+  private _onMouseUp(event: MouseEvent): void {
     const line: number = parseInt((event.target as any).parentNode.id);
     if (event.button === 0) {
       if (!this._activeTimerange) {
@@ -353,7 +356,7 @@ class Logviewer {
     this._logsElement.addEventListener("contextmenu", (event: MouseEvent) =>
       event.preventDefault()
     );
-    this._logsElement.addEventListener("mouseup", this.onMouseUp.bind(this));
+    this._logsElement.addEventListener("mouseup", this._onMouseUp.bind(this));
     document.body.addEventListener("mousemove", this._onMouseOver.bind(this));
   }
 }
